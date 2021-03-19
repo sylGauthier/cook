@@ -6,7 +6,7 @@ just wanna grill for God's sake.
 This is a `man-pages` inspired recipe system. You can install and search through
 recipes and open them with the `man` viewer interface.
 
-![output](https://user-images.githubusercontent.com/28098392/111772539-15e16e00-8901-11eb-8d45-a54f7899d96e.gif)
+![cook](https://user-images.githubusercontent.com/28098392/111773254-0ca4d100-8902-11eb-85a0-0855662690df.gif)
 
 ## How-to
 
