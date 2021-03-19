@@ -6,6 +6,8 @@ just wanna grill for God's sake.
 This is a `man-pages` inspired recipe system. You can install and search through
 recipes and open them with the `man` viewer interface.
 
+![output](https://user-images.githubusercontent.com/28098392/111772539-15e16e00-8901-11eb-8d45-a54f7899d96e.gif)
+
 ## How-to
 
 Recipes are simple `roff` files that can be generated from markdown files. This
