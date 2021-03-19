@@ -1,0 +1,3 @@
+PREFIX:=/home/syg/.local
+COOKPATH:=$(PREFIX)/share/cooking
+BINDIR:=$(PREFIX)/bin
