@@ -64,5 +64,5 @@ whose recipes are an improved version of the ones available at Luke Smith's
 ```bash
 git clone https://github.com/sylGauthier/recipes.git
 cd recipes
-cook -i
+cook -i src/*.md
 ```
