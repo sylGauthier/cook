@@ -11,45 +11,58 @@ recipes and open them with the `man` viewer interface.
 ## How-to
 
 Recipes are simple `roff` files that can be generated from markdown files. This
-repo offers a Makefile to build and install the `roff` files from markdown as
-well as a simple script, `cook`, to list, search and open recipes.
+repository offers a simple script, `cook`, that can open, search through and
+install recipes.
 
-### Write recipes
+`cook` reads from and install to the directory pointed by `$COOKPATH` (defaults
+to `$HOME/.local/share/cooking`).
 
-To create new recipes, first edit the `config` file to your convenience.
-Especially, if you don't want to have to log in as root every time you add new
-recipes, set `COOKPATH` to a folder you have the rights to.
+### Install cook
 
-You can then add your recipes in the `src` directory, following the
-`src/example.md` file.
-
-Then, simply type
+Just put it in your `$PATH`, e.g:
 
 ```
-make install
+git clone https://github.com/sylGauthier/cook.git
+cd cook
+sudo cp cook /usr/bin
+sudo chmod +x /usr/bin/cook
 ```
+
+### Write/install recipes
+
+Simply write your recipe as a markdown file. You can take inspiration from
+[this repository](https://github.com/sylGauthier/recipes). Once you are done,
+you can install it by typing:
+
+```
+cook -i <name-of-your-recipe>
+```
+
+`cook` will automatically convert it to a `man` page and install it to the
+directory pointed to by `$COOKPATH`.
+
+You can of course install multiple recipes at once by specifying multiple files
+to `cook -i`. `cook` can also install `*.1` files, that is, files that are
+already written in the `groff` language using the `man` macro package.
 
 ### Read recipes
 
-If you have already run `make install`, `cook` should be in your PATH.
-
-First, you will need to set the `COOKPATH` variable, if you have installed
-recipes in a different place than the default (`/usr/share/cooking`).
+Once you have some recipes installed, `cook` can list them, grep for words in
+them and display them using `man`:
 
 - `cook`: list all recipes.
 - `cook recipe-name`: opens `recipe-name` in the `man` interface.
 - `cook -s query`: list all recipes that contain the word `query`. Case
   insensitive.
 
-### Install recipes from other sources
+### Install recipe packages
 
-For now, only my fork of Luke Smith's `based.cooking` offers the possibility to
-install recipes in this format, but that's already more than a hundred based
-recipes. To install all `based.cooking` recipes:
+You can clone [this recipe repository](https://github.com/sylGauthier/recipes),
+whose recipes are an improved version of the ones available at Luke Smith's
+[based.cooking](https://based.cooking), and install them:
 
 ```bash
-git clone https://github.com/sylGauthier/based.cooking.git
-cd based.cooking
-# edit config to your convenience
-make install
+git clone https://github.com/sylGauthier/recipes.git
+cd recipes
+cook -i
 ```

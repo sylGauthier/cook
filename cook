@@ -1,10 +1,48 @@
-#!/bin/sh
+#!/bin/bash
 
-test -n "$COOKPATH" || COOKPATH="/usr/share/cooking"
+test -n "$COOKPATH" || COOKPATH="$HOME/.local/share/cooking"
 
 die() {
     printf "$1\n" 1>&2
     exit 1
+}
+
+md_to_man() {
+    printf ".TH $1 7\n"
+    sed -e 's/^##* /.SH /' \
+        -e 's/^ *//g' \
+        -e 's/^ *- */.IP \\(bu 4\n/' \
+        -e 's/^ *\* */.IP \\(bu 4\n/' \
+        -e 's/^ *\([0-9][0-9]*\). */.IP \1. 4\n/' \
+        -e 's/\*\*\([^*]*\)\*\* */\n.B \1\n/g' \
+        -e 's/\*\([^*]*\)\* */\n.I \1\n/g' \
+        -e '/!\[.*\](.*)/d' \
+        -e 's;\[\([^]]*\)\](\([a-z\-]*\)\.html);\1 (\n.I \2\n);g' \
+        -e 's;\[\([^]]*\)\](\([a-z\-]*\));\1 (\n.I \2\n);g' \
+        -e 's;\[\([^]]*\)\](\([^ ]*\));\1\n.UR \2\n.UE \n;g' \
+        -e 's/^;tags:\(.*\)/.SH Tags:\n.I \1\n/' < "$2"
+}
+
+install_recipes() {
+    test -d "$COOKPATH" || mkdir -p "$COOKPATH" || die "Can't access/create $COOKPATH"
+    for r in $@ ; do
+        base="${r##*/}"
+        ext="${base##*.}"
+
+        printf "Processing $r\n"
+        case "$ext" in
+            md)
+                dest="${base%.md}.1"
+                md_to_man "${base%.md}" "$r" > "$COOKPATH/$dest"
+                ;;
+            1)
+                cp "$r" "$COOKPATH/$base"
+                ;;
+            *)
+                printf "Warning: skipping $r: extension unknown\n" 1>&2
+                ;;
+        esac
+    done
 }
 
 get_recipes() {
@@ -39,6 +77,10 @@ else
         -s)
             shift
             search_recipe "$@"
+            ;;
+        -i)
+            shift
+            install_recipes $@
             ;;
         *)
             open_recipe "$1"
