@@ -67,6 +67,125 @@ open_recipe() {
     man "$path"
 }
 
+read_entry() {
+    ok=""
+    while [ -z "$ok" ] ; do
+        test -n "$1" && printf "$1:\n" 1>&2
+        read -e -i "$4" entry
+        if [ "$2" = "nonempty" -a -z "$entry" ] ; then
+            printf "Cannot be empty\n" 1>&2
+        elif [ -n "$entry" -a -n "$3" ] && grep -qv "$3" <<< "$entry" ; then
+            printf "Invalid format\n" 1>&2
+        else
+            ok=1
+        fi
+    done
+    printf "$entry\n"
+}
+
+read_entries() {
+    list=""
+    n=""
+    e=""
+    grep -q "numbered" <<< "$2" && n=1
+
+    printf "$1 (end with an empty line)" 1>&2
+
+    if grep -q "atleastone" <<< "$2" ; then
+        printf " (at least one):\n" 1>&2
+        e="nonempty"
+    else
+        printf " (optional):\n" 1>&2
+    fi
+
+    entry="$(read_entry "$n" "$e" "$3")"
+    list="$entry"
+    test -n "$n" && n="$((n+1))"
+
+    while [ -n "$entry" ] ; do
+        entry="$(read_entry "$n" "" "$3")"
+        list="$(printf "$list\n$entry")"
+        test -n "$n" && n="$((n+1))"
+    done
+    printf "$list"
+}
+
+new_recipe() {
+    name=""
+    desc=""
+    prep=""
+    cook=""
+    serv=""
+    ingr=""
+    dirs=""
+    note=""
+    cont=""
+    tags=""
+
+    name="$(read_entry "Recipe name" "nonempty")"
+    fname="$(printf "$name\n" | tr '[A-Z] ' '[a-z]-')"
+    fname="$(read_entry "Recipe file name" \
+                        "nonempty" \
+                        '^[a-z][a-z\-]*$' \
+                        "$fname").md"
+    test -f "$fname" && die "File $fname already exists"
+
+    desc="$(read_entry "Recipe description" "nonempty")"
+
+    prep="$(read_entry "Preparation time (integer followed by 'm' for minutes or 'h' for hours)" \
+                       "nonempty" \
+                       '^[0-9][0-9]*[mh]$')"
+
+    cook="$(read_entry "Cooking time (integer followed by 'm' for minutes or 'h' for hours)" \
+                       "nonempty" \
+                       '^[0-9][0-9]*[mh]$')"
+
+    serv="$(read_entry "Servings or yield (no unit means servings, otherwise specify unit in lowercase, e.g \"loaves\", \"cookies\", etc)" \
+                       "nonempty" \
+                       '^[0-9][0-9]* *[a-z]*$')"
+
+    ingr="$(read_entries "Ingredients" "atleastone")"
+    dirs="$(read_entries "Directions" "atleastone|numbered")"
+    note="$(read_entries "Notes" "")"
+    cont="$(read_entries "Contributors" "atleastone")"
+    tags="$(read_entries "Tags (only lowercase letters and \"-\" allowed)" "atleastone" '^[a-z][a-z\-]*[a-z]$')"
+
+    printf -- "# $name\n\n" > "$fname"
+    printf -- "$desc\n\n" >> "$fname"
+
+    printf -- "- Prep time: %s.\n" "$(sed 's/m/ minutes/;s/h/ hours/' <<< "$prep")" >> "$fname"
+    printf -- "- Cook time: %s.\n" "$(sed 's/m/ minutes/;s/h/ hours/' <<< "$cook")" >> "$fname"
+    printf -- "- Servings: $serv.\n\n" >> "$fname"
+
+    printf "## Ingredients\n\n" >> "$fname"
+    sed 's/^\(.*\)\.*$/- \1./' <<< "$ingr" >> "$fname"
+    printf "\n\n" >> "$fname"
+
+    printf "## Directions\n\n" >> "$fname"
+    n=1
+    while read -r line ; do
+        sed "s/^\\(.*\\)\.*$/$n. \1./" <<< "$line" >> "$fname"
+        n="$((n+1))"
+    done <<< "$dirs"
+    printf "\n\n" >> "$fname"
+
+    if [ -n "$note" ] ; then
+        printf "## Notes\n\n" >> "$fname"
+        sed 's/^\(.*\)\.*$/- \1./' <<< "$note" >> "$fname"
+        printf "\n\n" >> "$fname"
+    fi
+
+    printf "## Contribution\n\n" >> "$fname"
+    sed 's/^\(.*\)\.*$/- \1./' <<< "$cont" >> "$fname"
+    printf "\n\n" >> "$fname"
+
+    printf ";tags:" >> "$fname"
+    while read -r tag ; do
+        printf " $tag" >> "$fname"
+    done <<< "$tags"
+    printf "\n" >> "$fname"
+}
+
 help() {
     printf "$0 [<recipe>|-s <query>]\n"
 }
@@ -82,6 +201,10 @@ else
         -i)
             shift
             install_recipes $@
+            ;;
+        -n)
+            shift
+            new_recipe $@
             ;;
         *)
             open_recipe "$1"
