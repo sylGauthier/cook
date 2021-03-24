@@ -28,10 +28,26 @@ sudo cp cook /usr/bin
 sudo chmod +x /usr/bin/cook
 ```
 
-### Write/install recipes
+### Write recipes
+
+`cook` offers a convenient way to interactively create a new recipe. To write a
+new recipe using the interactive system, type:
+
+```
+cook -n
+```
+
+You will be asked to enter the different components of the recipe. `cook` will
+automatically perform sanity checks on each field and ensure that your recipe
+conforms to some standard.
+
+The recipe will be exported into a markdown file that you can edit before
+converting/installing.
+
+### Install recipes
 
 Simply write your recipe as a markdown file. You can take inspiration from
-[this repository](https://github.com/sylGauthier/recipes). Once you are done,
+the `example.md`, or use the interactive system above. Once you are done,
 you can install it by typing:
 
 ```
