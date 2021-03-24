@@ -167,17 +167,17 @@ new_recipe() {
         sed "s/^\\(.*\\)\.*$/$n. \1./" <<< "$line" >> "$fname"
         n="$((n+1))"
     done <<< "$dirs"
-    printf "\n\n" >> "$fname"
+    printf "\n" >> "$fname"
 
     if [ -n "$note" ] ; then
         printf "## Notes\n\n" >> "$fname"
         sed 's/^\(.*\)\.*$/- \1./' <<< "$note" >> "$fname"
-        printf "\n\n" >> "$fname"
+        printf "\n" >> "$fname"
     fi
 
     printf "## Contribution\n\n" >> "$fname"
     sed 's/^\(.*\)\.*$/- \1./' <<< "$cont" >> "$fname"
-    printf "\n\n" >> "$fname"
+    printf "\n" >> "$fname"
 
     printf ";tags:" >> "$fname"
     while read -r tag ; do
